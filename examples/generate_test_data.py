@@ -1,9 +1,13 @@
 import numpy as np
 import random
 import datetime
+import sys
+from pathlib import Path
+
+# Add the parent directory of 'src' to the system path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
-db_url = "sqlite:///testdb.sqlite"
  # Define a function to generate a value based on the column's data type
 def generate_value(col_name):
     base_type = col_name.split('_')[0]  # Get the base type (e.g., "integer" from "integer_1")
@@ -46,15 +50,7 @@ def generate_csv_like_test_data(num_rows=50, max_cols=10):
     for _ in range(num_rows):
         num_cols = random.randint(5, max_cols)
         row = [generate_value(selected_columns[i]) for i in range(num_cols)]
+        row.extend([None] * (len(selected_columns) - num_cols))
         data.append(row)
+        
     return selected_columns, data
-
-# Generate the CSV-like test data
-column_names, test_data = generate_csv_like_test_data(50, max_cols=10)
-max_y = max([len(r) for r in test_data])
-np.array(test_data, dtype=object)
-# Display the column names and a sample of the data
-print("Column Names:", column_names)
-print("First 5 Rows of Data:")
-for row in test_data[:5]:
-    print(row)

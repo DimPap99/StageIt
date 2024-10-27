@@ -21,9 +21,11 @@ PSQL_TYPE_MAPPING = {
     pd.Timedelta: "INTERVAL",
     np.object_: "TEXT",
     np.str_: "TEXT",
-    np.bytes_: "BYTEA"
+    np.bytes_: "BYTEA",
+    str: "TEXT",       # Added to handle regular Python strings
+    int: "BIGINT",     # Added for Python int in mixed types
+    float: "DOUBLE PRECISION" # Added for Python float in mixed types
 }
-
 SQLITE_TYPE_MAPPING = {
     np.int8: "INTEGER",
     np.int16: "INTEGER",
@@ -38,7 +40,8 @@ SQLITE_TYPE_MAPPING = {
     pd.Timestamp: "TEXT",
     np.object_: "TEXT",
     np.str_: "TEXT",
-    np.bytes_: "BLOB"
+    np.bytes_: "BLOB",
+    str: "TEXT",        # Added to handle regular Python strings
+    int: "INTEGER",     # Added for Python int in mixed types
+    float: "REAL"       # Added for Python float in mixed types
 }
-
-

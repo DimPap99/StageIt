@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 from typing import Union
-from config import PSQL_TYPE_MAPPING, SQLITE_TYPE_MAPPING
-from utils import DBEnum
+from .config import PSQL_TYPE_MAPPING, SQLITE_TYPE_MAPPING
+from .utils import DB_Enum
 
 class SchemaManager():        
-    def __init__(self, db_type:DBEnum):
-        if db_type == DBEnum.PSQL:
+    def __init__(self, db_type:DB_Enum):
+        if db_type == DB_Enum.PSQL:
             self.type_mapping = PSQL_TYPE_MAPPING
         else:
             self.type_mapping = SQLITE_TYPE_MAPPING
@@ -21,6 +21,9 @@ class SchemaManager():
         Returns:
             dict: _description_
         """
+        if data.columns is None:
+            cols = [f"column_{i}" for i in range(data.shape[1])]
+            data.columns = cols
         return {col: self.type_mapping.get(type(data[col].iloc[0]), "TEXT") for col in data.columns}
     
     
@@ -38,6 +41,19 @@ class SchemaManager():
         Returns:
             dict:  A map between the the columns and Database Types
         """
+        if col_names is None:
+            total_columns =  data.shape[data.ndim - 1]
+            col_names = [f"column_{i}" for i in range(0, total_columns)]
+        # Example: Adjusting your code to properly handle column and item iteration
+        col_types = {}
+        for i in range(total_columns):
+            for item in data[:, i]:
+                if item is not None:
+                    col_types[i] = type(item)
+                    break
+                else:
+                    continue
+
         if data.ndim == 1:
             # Single-dimensional array case
             return {col_names[0] : self.type_mapping.get(data.dtype.type, "TEXT")}
@@ -51,7 +67,7 @@ class SchemaManager():
         else:
             raise ValueError("Unsupported array dimension. Provide 1D or 2D array.")
         
-    def infer_types(self, data: Union[np.ndarray, pd.DataFrame, list, tuple]) -> dict:
+    def infer_types(self, data: Union[np.ndarray, pd.DataFrame, list, tuple], col_names=None) -> dict:
         """Infers the column types of the data provided.
 
         Args:
@@ -63,11 +79,16 @@ class SchemaManager():
         Returns:
             dict: A map between the the columns and Database Types
         """
-        if isinstance(pd.DataFrame):
+        #TODO: check if np is better with lots of data and use it. Else pd is more convenient   
+
+        if isinstance(data, pd.DataFrame):
             return self.infer_from_dataframe(data)
-        elif isinstance(np.ndarray):
-            return self.infer_from_np_array(data)
-        elif isinstance(list) or isinstance(tuple):
-            return self.infer_from_np_array(np.array(data, dtype=object))
         else:
-            raise ValueError("Unsupported data instance.")
+            return self.infer_from_dataframe(pd.DataFrame(data, columns=col_names))
+        # elif isinstance(data, np.ndarray):
+        #     return self.infer_from_np_array(data, col_names)
+        # elif isinstance(data, list) or isinstance(data, tuple):
+        #     #works only if the lists are padded so as to be of equal length
+        #     return self.infer_from_np_array(np.array(data, dtype=object), col_names)
+        # else:
+        #     raise ValueError("Unsupported data instance.")

@@ -26,7 +26,26 @@ class BaseDB(ABC):
         pass
     
     @abstractmethod
-    async def add_columns(self, table_name:str):
+    async def create_table(self, table_name:str, columns: dict = None):
+        """
+
+        Args:
+            table_name (str): Table name
+        """
+        pass
+    
+    @abstractmethod
+    async def drop_table(self, table_name:str):
+        """
+
+        Args:
+            table_name (str): Table name
+        """
+        pass
+    
+    
+    @abstractmethod
+    async def add_columns(self, table_name:str, new_columns:dict):
         """Adds the missing columns to the table
 
         Args:
@@ -34,7 +53,7 @@ class BaseDB(ABC):
         """
         
     @abstractmethod
-    async def insert(self, table_name, data: Union[np.ndarray, pd.DataFrame]):
+    async def insert(self, table_name, data: Union[np.ndarray, pd.DataFrame], columns_and_types):
         """Inserts data into the table specified
 
         Args:
